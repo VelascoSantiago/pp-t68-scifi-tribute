@@ -1,0 +1,15 @@
+# Archivos de respaldo de Blender
+*.blend1
+*.blend2
+*.blend@
+
+# Carpetas de compilación de C++
+build/
+bin/
+*.o
+*.out
+*.exe
+
+# Archivos temporales y de sistema
+.DS_Store
+Thumbs.db
