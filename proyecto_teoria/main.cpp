@@ -28,6 +28,9 @@ static SkinnedModel* skVictoria = nullptr;   // escena 8: CUAU con la animacion 
 static float tVictoria = 0.0f, VICTORIA_ESC = 1.0f;
 static bool linterna = false, noche = false;   // T3: L = linterna (spot que sigue a la camara), T = dia/noche (direccional), H = luces del casco de CUAU
 static float tCaida = -1.0f;
+// Animaciones nuevas por input (banco de pruebas): click izquierdo = salto de CUAU, click derecho = giro de los SENTINEL, tecla 9 = la MAC levita y gira
+static float tSalto = -1.0f, tGiro = -1.0f, tLev = -1.0f;
+static const float DUR_SALTO = 1.1f, DUR_GIRO = 1.6f, DUR_LEV = 3.0f;
 // T7: recorrido de camara animado en Blender (CAMARA_RECORRIDO_IGLESIA), tecla M
 struct CamKey { float t; glm::vec3 pos, fwd; };
 static std::vector<CamKey> recorrido; static bool recorridoOn = false; static float tRec = 0.0f;
@@ -56,6 +59,7 @@ static float HUESOS_DIST = 18.0f, HUESOS_ESC = 0.9f;   // ajustables con las var
 static int HUESOS_N = 1;
 static bool envActivo = true;   // tecla E: Fresnel + environment mapping (apagado = solo Phong)
 void MouseCallback(GLFWwindow *window, double xPos, double yPos);
+void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
 void DoMovement();
 void Animation();
 
@@ -904,6 +908,7 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(window);
 	glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
 	glfwSetKeyCallback(window, KeyCallback);
+	glfwSetMouseButtonCallback(window, MouseButtonCallback);
 	glfwSetCursorPosCallback(window, MouseCallback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -1057,7 +1062,8 @@ int main(int argc, char** argv)
 			float vibra = destello[i] ? 0.08f * sin(120.0f * tScar) : 0.0f;
 
 			glm::mat4 m = glm::translate(glm::mat4(1.0f), pos + glm::vec3(0.0f, vibra, 0.0f));
-			m = glm::rotate(m, glm::radians(yawBase + barrido), glm::vec3(0.0f, 1.0f, 0.0f));
+			float giro = (!modoRelato && tGiro >= 0.0f) ? 360.0f * Suave(Clamp01(tGiro / DUR_GIRO)) : 0.0f;   // click derecho: vuelta completa
+			m = glm::rotate(m, glm::radians(yawBase + barrido + giro), glm::vec3(0.0f, 1.0f, 0.0f));
 			m = glm::scale(m, glm::vec3(escGrupo[1]));
 			if (!modoRelato && i == 1 && tCaida >= 0.0f) {   // tecla 8: el SENTINEL central cae de espaldas
 				float c = CaidaSentinel(tCaida);
@@ -1139,7 +1145,8 @@ int main(int argc, char** argv)
 
 		// ---- CUAU-68: sprint esquivando en zigzag ----
 		{
-			glm::mat4 m = glm::translate(glm::mat4(1.0f), posCuau + cuauOffset);
+			float salto = (tSalto >= 0.0f) ? 6.0f * sin(3.14159f * Clamp01(tSalto / DUR_SALTO)) : 0.0f;   // click izquierdo: salto en parabola
+			glm::mat4 m = glm::translate(glm::mat4(1.0f), posCuau + cuauOffset + glm::vec3(0.0f, salto, 0.0f));
 			m = glm::rotate(m, glm::radians(cuauYaw + CUAU_YAW_OFFSET + yawGrupo[0]), glm::vec3(0.0f, 1.0f, 0.0f));
 			m = glm::rotate(m, glm::radians(cuauTilt), glm::vec3(0.0f, 0.0f, 1.0f));
 			m = glm::scale(m, glm::vec3(escGrupo[0]));
@@ -1185,7 +1192,9 @@ int main(int argc, char** argv)
 
 		// ---- MAC con 3 sierras girando ----
 		{
-			glm::mat4 m = glm::translate(glm::mat4(1.0f), posMac);
+			float uL = (tLev >= 0.0f) ? Clamp01(tLev / DUR_LEV) : 0.0f;   // tecla 9: sube, gira y baja
+			glm::mat4 m = glm::translate(glm::mat4(1.0f), posMac + glm::vec3(0.0f, 7.0f * sin(3.14159f * uL), 0.0f));
+			m = glm::rotate(m, glm::radians(360.0f * Suave(uL)), glm::vec3(0.0f, 1.0f, 0.0f));
 			m = glm::rotate(m, glm::radians(yawGrupo[2]), glm::vec3(0.0f, 1.0f, 0.0f));
 			m = glm::scale(m, glm::vec3(escGrupo[2]));
 			m = glm::translate(m, glm::vec3(-MAC_CENTRO.x, MAC_SUELO, -MAC_CENTRO.z));
@@ -1347,6 +1356,7 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 		if (key == GLFW_KEY_5 || key == GLFW_KEY_F) { if (!verObreros || key == GLFW_KEY_F) verObreros = !verObreros; tGolpe = 0.0f; std::printf("[5] Obreros con martillo (keyframes en codigo; 5 o ESPACIO = golpe, F = ocultar): %s\n", verObreros ? "SI" : "NO"); }
 		if (key == GLFW_KEY_6) { bool off = (huesosAnim >= 0 && huesosSel == 0); huesosSel = 0; huesosAnim = off ? -1 : 0; std::printf("[6] Animacion de huesos de CUAU (Mixamo): %s\n", off ? "NO" : "SI"); }
 		if (key == GLFW_KEY_7) { bool off = (huesosAnim >= 0 && huesosSel == 1); huesosSel = 1; huesosAnim = off ? -1 : 0; std::printf("[7] Animacion de huesos Victory (Mixamo): %s\n", off ? "NO" : "SI"); }
+		if (key == GLFW_KEY_9) { tLev = 0.0f; std::printf("[9] La MAC levita y gira (procedural)\n"); }
 		if (key == GLFW_KEY_8) { tCaida = (tCaida < 0.0f) ? 0.0f : -1.0f; std::printf("[8] Caida del SENTINEL central (procedural): %s\n", tCaida >= 0.0f ? "cae" : "de pie"); }
 		if (key == GLFW_KEY_SPACE && verObreros) tGolpe = 0.0f;
 		if (key == GLFW_KEY_R) { rigQuieto = !rigQuieto; std::printf("Modelos quietos (pose T): %s\n", rigQuieto ? "SI" : "NO"); }
@@ -1372,6 +1382,9 @@ void Animation()
 	if (animSierras) rotAspa += 540.0f * deltaTime;
 	tGolpe += deltaTime;
 	if (tCaida >= 0.0f) tCaida += deltaTime;
+	if (tSalto >= 0.0f) { tSalto += deltaTime; if (tSalto > DUR_SALTO) tSalto = -1.0f; }
+	if (tGiro  >= 0.0f) { tGiro  += deltaTime; if (tGiro  > DUR_GIRO)  tGiro  = -1.0f; }
+	if (tLev   >= 0.0f) { tLev   += deltaTime; if (tLev   > DUR_LEV)   tLev   = -1.0f; }
 	bool quieto = modoRig && rigQuieto;            // R: congela todo para revisar los modelos
 	if (animScarface && !quieto) tScar += deltaTime;
 
@@ -1418,6 +1431,13 @@ void Animation()
 
 		cuauTilt = 15.0f * cos(2.0f * t);        // se inclina al esquivar
 	}
+}
+
+void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
+{
+	if (action != GLFW_PRESS || modoRelato) return;   // solo en el banco de pruebas (F2)
+	if (button == GLFW_MOUSE_BUTTON_LEFT)  { tSalto = 0.0f; std::printf("[click izq] CUAU salta (procedural)\n"); }
+	if (button == GLFW_MOUSE_BUTTON_RIGHT) { tGiro = 0.0f;  std::printf("[click der] Los SENTINEL giran una vuelta (procedural)\n"); }
 }
 
 void MouseCallback(GLFWwindow *window, double xPos, double yPos)

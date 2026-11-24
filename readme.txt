@@ -27,19 +27,21 @@ MODO LIBRE Y CAMARA
 - F2 ...................... modo banco de pruebas (personajes sueltos para probar las animaciones)
 - F3 ...................... modo edicion de actores (solo desarrollo)
 
-ANIMACIONES POR TECLADO (en modo banco de pruebas, F2)
-- 1 .. Sierras de la MAC girando ............ basica
-- 2 .. Barrido y disparos de los SENTINEL .... procedural
-- 3 .. Zigzag esquivando de CUAU-68 .......... procedural
-- 4 .. Caminata por partes de los robots ..... jerarquia, keyframes en codigo
-- 5 .. Obreros con martillo (ESPACIO golpea) .. keyframes en codigo
-- 6 .. Animacion de huesos de CUAU-68 (Mixamo) .. huesos
-- 7 .. Animacion de huesos Victory de CUAU-68 (Mixamo) .. huesos
-- 8 .. Caida del SENTINEL central .............. procedural
-Tambien funcionan las letras N, B, V, G, F (equivalen a 1, 2, 3, 4, 5) y K (cambia de clip de huesos).
-En la escena final del relato (ESPACIO en la escena 8), CUAU celebra con la animacion Victory.
-Siempre activas (animadas en Blender): papel picado ondeando y petalos cayendo en la ofrenda.
-- M .. Recorrido de camara animado en Blender por la iglesia (T7)
+ANIMACIONES POR INPUT (8 en modo banco de pruebas, F2)
+- 2 .......... Barrido y disparos de los SENTINEL ... procedural
+- 3 .......... Zigzag esquivando de CUAU-68 ......... procedural
+- 4 .......... Caminata por partes de los robots .... keyframes en codigo (jerarquia)
+- 5 .......... Obreros con martillo (ESPACIO golpea) . keyframes en codigo
+- 8 .......... Caida del SENTINEL central ............ procedural
+- Click izq .. CUAU salta ........................... procedural
+- Click der .. Los SENTINEL dan una vuelta .......... procedural
+- 9 .......... La MAC levita y gira ................. procedural
+Extras con teclado: 1 (sierras de la MAC), 6 (huesos, clip de Mixamo), 7 (huesos, Victory); N, B, V, G, F equivalen a 1, 2, 3, 4, 5; K cambia de clip de huesos.
+
+ANIMACIONES QUE NO DEPENDEN DEL INPUT
+- Por codigo: pulso de luces del casco de CUAU-68, destello y retroceso del railgun, sierras de la MAC.
+- De huesos (Mixamo): CUAU celebra con la animacion Victory en la escena final (ESPACIO en la escena 8); clip de carrera con la tecla 6.
+- De software externo (Blender): papel picado ondeando y petalos cayendo en la ofrenda (siempre activos); recorrido de camara por la iglesia (tecla M).
 
 LUCES EN TIEMPO REAL
 - L .. Linterna: un reflector que sigue a la camara
