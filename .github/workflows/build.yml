@@ -10,6 +10,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Actualizar vcpkg (el del runner trae un hash viejo de kubazip)
+        shell: pwsh
+        run: |
+          git -C $env:VCPKG_INSTALLATION_ROOT pull --ff-only
+          & "$env:VCPKG_INSTALLATION_ROOT/bootstrap-vcpkg.bat" -disableMetrics
       - name: Dependencias con vcpkg (estaticas)
         run: vcpkg install glfw3:x64-windows-static assimp:x64-windows-static
       - name: Configurar
