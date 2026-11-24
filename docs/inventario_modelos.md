@@ -1,29 +1,41 @@
 # Inventario de modelos 3D (requisitos T1 y T2)
 
-Vértices contados de los `.obj` que carga el programa (líneas `v` del archivo). Los autores marcados con **?** están por confirmar.
+Equipo Gundam: Duque Malpica Victor Javier (Scrum Master), Echeverria Goicochea Erick Isaac (Developer), Velasco Garcia Santiago (Developer & Product Owner).
+Autoria segun el PDF de la entrega de modelado (13 de octubre de 2026), actualizada con lo que cambio despues. Vertices contados de los `.obj` que carga el programa.
 
-## Modelos propios del equipo
+## Modelos hechos por el equipo
 
-| # | Modelo | Autor | Textura | Vértices | Archivo |
+| # | Modelo | Autor | Textura | Vertices | Archivo |
 |---|---|---|---|---|---|
-| 1 | CUAU-68 | Santiago | Sí (rusty_*.png, helmet_*.png, glass, emblema) | 4 230 | `Models/CUAU-68/cuau_sprint.obj` (+ partes y rig con huesos `anim/cuau_anim.gltf`) |
-| 2 | SENTINEL-MX | Santiago | Sí (solid_black/green, lens, emblema, fuelle) | 5 954 | `Models/SENTINEL/sentinel_aim.obj` |
-| 3 | Railgun | Santiago | Sí (solid_black/green) | 572 | `Models/SENTINEL/railgun_aim.obj` |
-| 4 | MAC (cuerpo) | Santiago | Sí (rusty_red/white, obsidian) | 472 | `Models/MAC/mac_cuerpo.obj` |
-| 5 | Aspa de la MAC (x3, animada) | Santiago | Sí (rusty_red/white) | 2 760 | `Models/MAC/aspa.obj` |
-| 6 | Obrero (UNAM / IPN) | **?** | Color (obr_*) | 264 | `Models/OBRERO/obrero_*.obj` |
-| 7 | Catrina | Erick | Sí (catrina.png) | 30 501 | `Models/plaza_ofrenda/plaza_ofrenda.obj` (objeto `catrina`) |
-| 8 | Altar de la ofrenda (estructura y cuadros) | Erick | Sí (papel picado) | ~22 000 | ídem (`Cuadro_*`, `Cruz_Base`, `Estructura`) |
-| 9 | Cempasúchil | Erick | Color | 6 448 | ídem (`Cempasuchil`, `Petalo_*`) |
-| 10 | Veladoras, platos, frutas (naranja, mandarina), jarrones | Erick | Sí (frutas) / color | ~2 500 | ídem |
-| 11 | Papel picado ondeando (32 planos, animado en Blender) | Erick | Sí (imágenes PNG) | 128 | `Models/plaza_ofrenda/anim/ofrenda_anim.gltf` |
-| 12 | Pétalos cayendo (24 piezas, animados en Blender) | Erick | Color | 216 | ídem |
-| 13 | Plaza de las Tres Culturas (iglesia, edificios, bancas, cruz, lápida, plataformas, zona arqueológica) | Victor | Sí (rock_wall_08, concrete_wall_006, plastered_wall_02, grass_ground) | ~306 900 (escena completa con la ofrenda) | `Models/plaza_ofrenda/plaza_ofrenda.obj` |
+| 1 | CUAU-68 (malla, partes y rig con huesos) | Santiago Velasco | Si (rusty_*, helmet_*, glass, emblema) | 4 230 | `Models/CUAU-68/` |
+| 2 | SENTINEL-MX | Santiago Velasco | Si (solid_black/green, lens, emblema, fuelle) | 5 954 | `Models/SENTINEL/sentinel_aim.obj` |
+| 3 | MAC (Macuahuitl, cuerpo) y aspas | Santiago Velasco (modelo propio; sustituye al de Sketchfab de la entrega) | Si (rusty_red/white, obsidian) | 472 + 2 760 | `Models/MAC/` |
+| 4 | Plaza: zona arqueologica | Victor Duque | Si (rock_wall_08, concrete_wall_006) | (parte de la escena) | `Models/plaza_ofrenda/plaza_ofrenda.obj` |
+| 5 | Plaza: zona colonial (iglesia) | Victor Duque | Si (plastered_wall_02, rock_wall_08) | ~42 000 | ídem |
+| 6 | Plaza: zona contemporanea (edificios) | Victor Duque | Si (concrete_wall_006, plastered_wall_02) | (parte de la escena) | ídem |
+| 7 | Mobiliario urbano, iluminacion, senalamientos, flora | Victor Duque | Si / color | (parte de la escena) | ídem |
+| 8 | Calaverita de azucar | Erick Echeverria | Color | (en la escena) | ídem |
+| 9 | Pan de muerto | Erick Echeverria | Color | (en la escena) | ídem |
+| 10 | Frutas (uvas, manzana, naranja, mandarina, guayaba) | Erick Echeverria | Si | 482 por fruta aprox. | ídem |
+| 11 | Veladoras y vaso de agua | Erick Echeverria | Color | 128 aprox. | ídem |
+| 12 | Ramo de flores del jarron | Erick Echeverria | Color | (en la escena) | ídem |
+| 13 | Cuadro / altar (estructura propia, detalles con ayuda de Claude) | Erick Echeverria | Si (papel picado) | ~22 000 | ídem |
+| 14 | Papel picado ondeando (32 planos, animado en Blender) | Erick Echeverria (shading propio, imagenes de vexels y similares) | Si (PNG) | 128 | `Models/plaza_ofrenda/anim/ofrenda_anim.gltf` |
+| 15 | Petalos cayendo (24 piezas, animados en Blender) | Erick Echeverria | Color | 216 | ídem |
 
-Modelos distintos (T1, mínimo 8): **13**. Modelos creados por participantes (T2): todos los de la tabla; los obreros dependen de confirmar autoría.
+## Modelos descargados o hechos con apoyo de IA (permitidos por T1)
 
-## Créditos de recursos externos (para las referencias APA)
+| Modelo | Origen | Vertices | Credito |
+|---|---|---|---|
+| Railgun "La Bengala" | "Cameraman Rail Gun low poly" de samuel2wde, Sketchfab (https://skfb.ly/oMqIR), CC-BY 4.0 | 572 | **Obligatorio citar** (licencia CC-BY) |
+| Catrina | Comprada en Cults3D (https://cults3d.com/es/modelo-3d/arte/la-catrina-calavera) | 30 501 | Citar |
+| Jarron | TurboSquid (https://www.turbosquid.com/es/3d-models/vase-3-sxix-with-decoration-greek-3d-model-2415032) | (en la escena) | Citar |
+| Flor de cempasuchil | Modelada y optimizada con Claude | 6 448 | Indicar uso de IA |
+| Cruz de flores | Hecha con Claude | 1 243 | Indicar uso de IA |
+| Obreros (UNAM / IPN) | Categoria "Personas" de la entrega (IA o descargado); por confirmar | 264 | Por confirmar |
 
-- Texturas de plaza: Poly Haven (`rock_wall_08`, `concrete_wall_006`, `plastered_wall_02`, `grass_ground`).
-- Animación de huesos de CUAU-68: Mixamo (Adobe).
-- Imágenes de papel picado, catrina y frutas de la ofrenda: bajadas de internet (canva, pngwing y similares); completar la fuente exacta de cada una.
+Resumen: modelos distintos (T1, minimo 8): sobran, ver tablas. Modelos propios (T2, minimo 8): mas de 14 (filas 1 a 15 de la primera tabla).
+
+## Otros creditos para las referencias APA
+- Texturas de la plaza: Poly Haven (rock_wall_08, concrete_wall_006, plastered_wall_02, grass_ground).
+- Animacion de huesos de CUAU-68 (clip y Victory): Mixamo (Adobe).

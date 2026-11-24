@@ -51,7 +51,12 @@ ILUMINACION Y AMBIENTE
 - El cielo (skybox) es un cubemap que tambien se refleja en los materiales.
 
 CREDITOS
-- Modelos: robots CUAU-68, SENTINEL-MX, railgun y MAC: Santiago Velasco. Plaza: Victor. Ofrenda: Erick.
-- Animacion de huesos: Mixamo (Adobe), aplicada al rig de CUAU-68.
+Equipo Gundam: Duque Malpica Victor Javier, Echeverria Goicochea Erick Isaac, Velasco Garcia Santiago.
+- Robots CUAU-68, SENTINEL-MX y MAC: Santiago Velasco Garcia.
+- Plaza de las Tres Culturas: Victor Javier Duque Malpica.
+- Ofrenda (altar, frutas, pan de muerto, calaverita, veladoras, papel picado): Erick Isaac Echeverria Goicochea.
+- Railgun: "Cameraman Rail Gun low poly" de samuel2wde (https://skfb.ly/oMqIR), licencia CC-BY 4.0.
+- Catrina: Cults3D. Jarron: TurboSquid. Cempasuchil y cruz de flores: hechos con apoyo de Claude (IA).
+- Animaciones de huesos de CUAU-68: Mixamo (Adobe).
 - Texturas de la plaza: Poly Haven (rock_wall_08, concrete_wall_006, plastered_wall_02, grass_ground).
-- Imagenes del papel picado y la catrina: ver las referencias del reporte.
+- Imagenes del papel picado: vexels y sitios similares (ver las referencias del reporte).
