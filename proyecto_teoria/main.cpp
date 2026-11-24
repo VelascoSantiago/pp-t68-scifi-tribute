@@ -24,6 +24,8 @@
 #include "Model.h"
 
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
+static SkinnedModel* skVictoria = nullptr;   // escena 8: CUAU con la animacion "Victory" de Mixamo (huesos)
+static float tVictoria = 0.0f, VICTORIA_ESC = 1.0f;
 static bool linterna = false, noche = false;   // T3: L = linterna (spot que sigue a la camara), T = dia/noche (direccional), H = luces del casco de CUAU
 static float tCaida = -1.0f;
 // T7: recorrido de camara animado en Blender (CAMARA_RECORRIDO_IGLESIA), tecla M
@@ -48,6 +50,7 @@ static bool PoseRecorrido(float t, glm::vec3& pos, glm::vec3& mira)
 	mira = pos + glm::normalize(glm::mix(recorrido[i].fwd, recorrido[i + 1].fwd, u)) * 10.0f;
 	return true;
 }                   // tecla 8: caida del SENTINEL central (-1 = de pie)
+static int huesosSel = 0;        // 0 = CUAU con clip de Mixamo (tecla 6), 1 = CUAU con Victory (tecla 7)
 static int huesosAnim = -1;      // tecla K: -1 apagado, 0..n-1 = animacion de huesos (Mixamo) del CUAU con skinning
 static float HUESOS_DIST = 18.0f, HUESOS_ESC = 0.9f;   // ajustables con las variables de entorno HUESOS_DIST y HUESOS_ESC
 static int HUESOS_N = 1;
@@ -418,7 +421,7 @@ static float DurAnim(int e)
 {
 	switch (e) {
 		case 1: return 4.2f;  case 2: return 7.0f;  case 3: return 3.8f;  case 4: return 2.2f;
-		case 5: return 3.4f;  case 6: return 3.2f;  case 7: return 3.4f;  case 8: return 3.6f;
+		case 5: return 3.4f;  case 6: return 3.2f;  case 7: return 3.4f;  case 8: return 6.9f;   // 8: dura lo que el clip Victory de Mixamo (206 frames a 30 fps)
 	}
 	return 0.0f;
 }
@@ -645,12 +648,8 @@ static void ActualizarRelato(float dt)
 	case 8: {   // victoria: 3 SENTINEL derribados, sus railguns en el piso, CUAU alza la MAC
 		cuauVisible = true; macVisible = true;
 		cuauPosR = E8_CUAU; cuauYawR = E8_CUAU_YAW;
-		float a = Rampa(t, 0.3f, 2.0f);
-		rigCuau.p[BRAZO_D].rot = glm::vec3(-150.0f * a, 0.0f, 78.0f);
-		rigCuau.p[ANTEBRAZO_D].rot.y = 20.0f * a;
-		rigCuau.p[C_CABEZA].rot.x = -28.0f * a;
-		rigCuau.p[TORSO].rot.x = -8.0f * a;
-		rigCuau.luces = pulso; animSierras = true;
+		// CUAU celebra con la animacion de huesos "Victory" (Mixamo); la MAC queda en el suelo a su lado
+		tVictoria = anim ? tAnim : 0.0f; macMezcla = 0.0f; rigCuau.luces = 0.0f; animSierras = true;
 		for (int i = 0; i < 3; i++) { sentVis[i] = true; sentPos[i] = E8_SENT[i]; sentYaw[i] = E8_SENT_YAW[i]; sentCaida[i] = 1.0f; sentRail[i] = false; }
 		break; }
 	}
@@ -812,6 +811,15 @@ static void DibujarRelato(Shader& sh, const glm::mat4* mSent, const float* retro
 			SetModel(P, m);
 			mdCuau->Draw(sh);
 		}
+		else if (escena == 8 && skVictoria)   // victoria: personaje esqueletado con la animacion de Mixamo
+		{
+			glm::mat4 b = glm::translate(glm::mat4(1.0f), cuauPosR + glm::vec3(edOff[escena][0]));
+			b = glm::rotate(b, glm::radians(cuauYawR + edOff[escena][0].w), Ejy);
+			b = glm::scale(b, glm::vec3(escGrupo[0] * VICTORIA_ESC));
+			glUniform1f(glGetUniformLocation(P, "emissive"), 0.0f);
+			glUniform1f(glGetUniformLocation(P, "brillo"), 1.0f);
+			skVictoria->Draw(sh, b, 0, tVictoria);
+		}
 		else
 		{
 			float sube = 2.9f * escGrupo[0] * sin(glm::radians(-cuauPitchR));      // acostado: el pivote (pies) sube por el grosor del cuerpo
@@ -826,7 +834,7 @@ static void DibujarRelato(Shader& sh, const glm::mat4* mSent, const float* retro
 	// ---- MAC: en la mano de CUAU (el eje de la maza continua el antebrazo) o, al inicio de la escena 3, en el suelo ----
 	if (macVisible)
 	{
-		glm::mat4 m = rigCuau.M[ANTEBRAZO_D] * glm::translate(glm::mat4(1.0f), MAC_MANO)
+		glm::mat4 m = ((rigCuau.M.size() > (size_t)ANTEBRAZO_D) ? rigCuau.M[ANTEBRAZO_D] : glm::mat4(1.0f)) * glm::translate(glm::mat4(1.0f), MAC_MANO)
 			* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), Ejz)
 			* glm::translate(glm::mat4(1.0f), glm::vec3(-MAC_CENTRO.x, MAC_AGARRE_Y, 0.0f));   // el puño sujeta el mango a y = -MAC_AGARRE_Y
 		if (macMezcla < 1.0f)
@@ -919,6 +927,8 @@ int main(int argc, char** argv)
 	Shader skyShader("Shader/skybox.vs", "Shader/skybox.frag");
 	SkinnedModel ofrendaAnim; ofrendaAnim.Load("Models/plaza_ofrenda/anim/ofrenda_anim.gltf", "Models/plaza_ofrenda/anim");   // papel picado + petalos (animados en Blender)
 	CargarRecorrido("Models/plaza_ofrenda/recorrido_iglesia.txt");
+	SkinnedModel cuauVictoria; if (cuauVictoria.Load("Models/CUAU-68/anim/cuau_victory.gltf", "Models/CUAU-68")) skVictoria = &cuauVictoria;
+	if (const char* e = getenv("VICTORIA_ESC")) VICTORIA_ESC = (float)atof(e);
 	SkinnedModel cuauHuesos; cuauHuesos.Load("Models/CUAU-68/anim/cuau_anim.gltf", "Models/CUAU-68");
 	HUESOS_N = cuauHuesos.NumAnimaciones();
 	if (const char* e = getenv("HUESOS_ESC")) HUESOS_ESC = (float)atof(e);
@@ -1203,7 +1213,7 @@ int main(int argc, char** argv)
 			m = glm::scale(m, glm::vec3(HUESOS_ESC));
 			glUniform1f(glGetUniformLocation(P, "emissive"), 0.0f);
 			glUniform1f(glGetUniformLocation(P, "brillo"), 1.0f);
-			cuauHuesos.Draw(lightingShader, m, huesosAnim, (float)glfwGetTime());
+			(huesosSel == 1 ? cuauVictoria : cuauHuesos).Draw(lightingShader, m, huesosSel == 1 ? 0 : huesosAnim, (float)glfwGetTime());
 		}
 		glUniform1f(glGetUniformLocation(P, "emissive"), 0.0f);
 		glUniform1f(glGetUniformLocation(P, "brillo"), 1.0f);
@@ -1315,7 +1325,7 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 
 		if (!(modoRelato && modoEdicion)) {   // K y E funcionan en relato y banco (en edicion se usan para mover actores)
 			if (key == GLFW_KEY_K) {   // animaciones de huesos: apagado -> anim 0 -> anim 1 ... -> apagado
-				huesosAnim = (huesosAnim + 2 > HUESOS_N) ? -1 : huesosAnim + 1;
+				huesosSel = 0; huesosAnim = (huesosAnim + 2 > HUESOS_N) ? -1 : huesosAnim + 1;
 				std::printf("Animacion de huesos: %d\n", huesosAnim);
 			}
 			if (key == GLFW_KEY_H) {   // luz 2: enciende / apaga visor y luces del casco de CUAU (incluye una luz puntual real)
@@ -1335,8 +1345,8 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 		if (key == GLFW_KEY_3 || key == GLFW_KEY_V) { animEsquive = !animEsquive;  std::printf("[3] Zigzag esquivando de CUAU (procedural): %s\n", animEsquive ? "SI" : "NO"); }
 		if (key == GLFW_KEY_4 || key == GLFW_KEY_G) { modoRig = !modoRig; std::printf("[4] Caminata por partes, jerarquia de transformaciones (keyframes en codigo): %s\n", modoRig ? "SI" : "NO"); }
 		if (key == GLFW_KEY_5 || key == GLFW_KEY_F) { if (!verObreros || key == GLFW_KEY_F) verObreros = !verObreros; tGolpe = 0.0f; std::printf("[5] Obreros con martillo (keyframes en codigo; 5 o ESPACIO = golpe, F = ocultar): %s\n", verObreros ? "SI" : "NO"); }
-		if (key == GLFW_KEY_6) { huesosAnim = (huesosAnim == 0) ? -1 : 0; std::printf("[6] Animacion de huesos clip 0 (Mixamo): %d\n", huesosAnim); }
-		if (key == GLFW_KEY_7) { if (HUESOS_N > 1) huesosAnim = (huesosAnim == 1) ? -1 : 1; std::printf("[7] Animacion de huesos clip 1: %d (clips en el archivo: %d)\n", huesosAnim, HUESOS_N); }
+		if (key == GLFW_KEY_6) { bool off = (huesosAnim >= 0 && huesosSel == 0); huesosSel = 0; huesosAnim = off ? -1 : 0; std::printf("[6] Animacion de huesos de CUAU (Mixamo): %s\n", off ? "NO" : "SI"); }
+		if (key == GLFW_KEY_7) { bool off = (huesosAnim >= 0 && huesosSel == 1); huesosSel = 1; huesosAnim = off ? -1 : 0; std::printf("[7] Animacion de huesos Victory (Mixamo): %s\n", off ? "NO" : "SI"); }
 		if (key == GLFW_KEY_8) { tCaida = (tCaida < 0.0f) ? 0.0f : -1.0f; std::printf("[8] Caida del SENTINEL central (procedural): %s\n", tCaida >= 0.0f ? "cae" : "de pie"); }
 		if (key == GLFW_KEY_SPACE && verObreros) tGolpe = 0.0f;
 		if (key == GLFW_KEY_R) { rigQuieto = !rigQuieto; std::printf("Modelos quietos (pose T): %s\n", rigQuieto ? "SI" : "NO"); }

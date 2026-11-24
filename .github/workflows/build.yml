@@ -25,6 +25,7 @@ jobs:
           mkdir entrega
           cp build/proyecto_teoria/Release/proyecto_teoria_main.exe entrega/
           cp -r proyecto_teoria/Models proyecto_teoria/Shader proyecto_teoria/UI entrega/
+          cp readme.txt entrega/
           rm -f entrega/ajustes_escenas.txt
           ls entrega
       - uses: actions/upload-artifact@v4
