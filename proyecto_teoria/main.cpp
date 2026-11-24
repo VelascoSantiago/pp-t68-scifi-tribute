@@ -20,6 +20,10 @@
 #include "Shader.h"
 #include "Skybox.h"
 #include "SkinnedModel.h"
+#ifdef _WIN32
+#define popen _popen     // MSVC: el modo de grabacion usa ffmpeg por tuberia
+#define pclose _pclose
+#endif
 #include "Camera.h"
 #include "Model.h"
 
