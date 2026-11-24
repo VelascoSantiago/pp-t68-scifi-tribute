@@ -26,6 +26,16 @@
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
 static SkinnedModel* skVictoria = nullptr;   // escena 8: CUAU con la animacion "Victory" de Mixamo (huesos)
 static float tVictoria = 0.0f, VICTORIA_ESC = 1.0f;
+// ---- modo de grabacion de video (--grabar salida.mp4 --eventos guion.txt): paso fijo de 1/30 s y eventos con tiempo ----
+struct EvVideo { float t; std::string tipo; std::string arg; float v[6]; bool hecha; };
+static int NombreATecla(const std::string& k)
+{
+	if (k == "SPACE") return GLFW_KEY_SPACE; if (k == "ENTER") return GLFW_KEY_ENTER; if (k == "LEFT") return GLFW_KEY_LEFT; if (k == "RIGHT") return GLFW_KEY_RIGHT;
+	if (k == "PGDN") return GLFW_KEY_PAGE_DOWN; if (k == "PGUP") return GLFW_KEY_PAGE_UP; if (k == "TAB") return GLFW_KEY_TAB;
+	if (k == "F1") return GLFW_KEY_F1; if (k == "F2") return GLFW_KEY_F2; if (k == "F3") return GLFW_KEY_F3; if (k == "F4") return GLFW_KEY_F4;
+	if (k.size() == 1) return (int)toupper((unsigned char)k[0]);
+	return GLFW_KEY_UNKNOWN;
+}
 static bool mostrarAyuda = false;   // F4: panel con los controles (se abre solo al entrar al modo libre con F2)
 static bool linterna = false, noche = false;   // T3: L = linterna (spot que sigue a la camara), T = dia/noche (direccional), H = luces del casco de CUAU
 static float tCaida = -1.0f;
@@ -56,7 +66,7 @@ static bool PoseRecorrido(float t, glm::vec3& pos, glm::vec3& mira)
 }                   // tecla 8: caida del SENTINEL central (-1 = de pie)
 static int huesosSel = 0;        // 0 = CUAU con clip de Mixamo (tecla 6), 1 = CUAU con Victory (tecla 7)
 static int huesosAnim = -1;      // tecla K: -1 apagado, 0..n-1 = animacion de huesos (Mixamo) del CUAU con skinning
-static float HUESOS_DIST = 18.0f, HUESOS_ESC = 0.9f;   // ajustables con las variables de entorno HUESOS_DIST y HUESOS_ESC
+static float HUESOS_DIST = 14.0f, HUESOS_ESC = 0.4f;   // ajustables con las variables de entorno HUESOS_DIST y HUESOS_ESC
 static int HUESOS_N = 1;
 static bool envActivo = true;   // tecla E: Fresnel + environment mapping (apagado = solo Phong)
 void MouseCallback(GLFWwindow *window, double xPos, double yPos);
@@ -962,6 +972,7 @@ int main(int argc, char** argv)
 	// ---- opciones de linea de comandos (pruebas): --escena N | --teclas t:TECLA,t:TECLA (SPACE ENTER LEFT RIGHT) | --foto archivo.png tiempo ----
 	struct TeclaAuto { float t; int key; bool hecha; };
 	std::vector<TeclaAuto> teclasAuto;
+	std::vector<EvVideo> eventosVideo; std::string rutaGrabar, rutaEventos; FILE* ffPipe = nullptr; float tVideo = 0.0f; std::vector<unsigned char> bufVideo;
 	std::string fotoRuta; float fotoT = -1.0f; bool camForzada = false, sinHud = false;
 	IniciarEscena(0);                                  // el relato empieza en la introduccion (--escena N lo cambia)
 	CargarAjustes();
@@ -969,6 +980,8 @@ int main(int argc, char** argv)
 	{
 		std::string a = argv[i];
 		if (a == "--escena" && i + 1 < argc) IrAEscena(atoi(argv[++i]));
+		else if (a == "--grabar" && i + 1 < argc) rutaGrabar = argv[++i];
+		else if (a == "--eventos" && i + 1 < argc) rutaEventos = argv[++i];
 		else if (a == "--sinhud") sinHud = true;   // capturas limpias: no dibuja el texto del relato
 		else if (a == "--foto" && i + 2 < argc) { fotoRuta = argv[++i]; fotoT = (float)atof(argv[++i]); }
 		else if (a == "--cam" && i + 6 < argc)   // camara fija para pruebas: --cam px py pz mx my mz
@@ -997,6 +1010,27 @@ int main(int argc, char** argv)
 		}
 	}
 	if (camForzada) { camLibre = false; }
+	if (!rutaEventos.empty())
+	{
+		std::ifstream f(rutaEventos); std::string l;
+		while (std::getline(f, l))
+		{
+			if (l.empty() || l[0] == '#') continue;
+			std::istringstream ss(l); EvVideo e{}; ss >> e.t >> e.tipo;
+			if (e.tipo == "KEY" || e.tipo == "ESCENA") ss >> e.arg;
+			if (e.tipo == "CAM") ss >> e.v[0] >> e.v[1] >> e.v[2] >> e.v[3] >> e.v[4] >> e.v[5];
+			eventosVideo.push_back(e);
+		}
+		std::printf("Guion de video: %d eventos\n", (int)eventosVideo.size());
+	}
+	if (!rutaGrabar.empty())
+	{
+		char cmd[1024];
+		std::snprintf(cmd, sizeof(cmd), "ffmpeg -y -loglevel error -f rawvideo -pix_fmt rgb24 -s %dx%d -r 30 -i - -vf vflip,scale=1280:720 -c:v libx264 -pix_fmt yuv420p -preset veryfast -crf 20 \"%s\"", SCREEN_WIDTH, SCREEN_HEIGHT, rutaGrabar.c_str());
+		ffPipe = popen(cmd, "w"); bufVideo.resize((size_t)SCREEN_WIDTH * SCREEN_HEIGHT * 3);
+		glfwSetKeyCallback(window, nullptr); glfwSetCursorPosCallback(window, nullptr); glfwSetMouseButtonCallback(window, nullptr);   // grabando: se ignora el teclado y el raton reales
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	}
 	lastFrame = glfwGetTime();    // el tiempo de carga de modelos no cuenta como primer cuadro
 
 	while (!glfwWindowShouldClose(window))
@@ -1004,8 +1038,25 @@ int main(int argc, char** argv)
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		if (ffPipe) deltaTime = 1.0f / 30.0f;   // grabando: paso fijo para que el video sea fluido
 
 		glfwPollEvents();
+		if (ffPipe || !eventosVideo.empty())
+		{
+			tVideo += deltaTime;
+			for (EvVideo& e : eventosVideo)
+			{
+				if (e.hecha || tVideo < e.t) continue;
+				e.hecha = true;
+				if (e.tipo == "KEY") { int k = NombreATecla(e.arg); KeyCallback(window, k, 0, GLFW_PRESS, 0); KeyCallback(window, k, 0, GLFW_RELEASE, 0); }
+				else if (e.tipo == "CLICKL") MouseButtonCallback(window, GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
+				else if (e.tipo == "CLICKR") MouseButtonCallback(window, GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS, 0);
+				else if (e.tipo == "ESCENA") IrAEscena(atoi(e.arg.c_str()));
+				else if (e.tipo == "CAM") camera.SetLookAt(glm::vec3(e.v[0], e.v[1], e.v[2]), glm::vec3(e.v[3], e.v[4], e.v[5]));
+				else if (e.tipo == "RESET") { posCuau = glm::vec3(0.0f); posSentinel = glm::vec3(0.0f, 0.0f, -30.0f); posMac = glm::vec3(12.0f, 0.0f, 6.0f); cuauOffset = glm::vec3(0.0f); cuauYaw = 0.0f; cuauTilt = 0.0f; tEsq = 0.0f; tScar = 0.0f; }   // posiciones del modo libre (para grabar)
+				else if (e.tipo == "FIN") glfwSetWindowShouldClose(window, GL_TRUE);
+			}
+		}
 		DoMovement();
 		Animation();
 		if (modoRelato)
@@ -1249,8 +1300,14 @@ int main(int argc, char** argv)
 			break;
 		}
 
+		if (ffPipe)
+		{
+			glReadPixels(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, bufVideo.data());
+			fwrite(bufVideo.data(), 1, bufVideo.size(), ffPipe);
+		}
 		glfwSwapBuffers(window);
 	}
+	if (ffPipe) { pclose(ffPipe); std::printf("Video guardado: %s (%.1f s)\n", rutaGrabar.c_str(), tVideo); }
 
 	if (edSucio) GuardarAjustes();
 	glfwTerminate();

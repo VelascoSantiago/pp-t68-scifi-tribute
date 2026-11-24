@@ -36,7 +36,7 @@ PAGINAS = {
     "t8a": ["La plaza queda en silencio."],
     "t9a": ["2 de octubre de 1968"],
     "t9b": ["Para quienes no volvieron a casa.", "Para quienes siguen buscando verdad y justicia."],
-    "t9c": ["Esta lápida está en la zona contemporánea:", "no olvidamos, ni ahora ni en el futuro.", "2 de octubre no se olvida."],
+    "t9c": ["Esta ofrenda recuerda a las y los estudiantes:", "no olvidamos, ni ahora ni en el futuro.", "2 de octubre no se olvida."],
 }
 
 # ----------------------------- mensajes de accion (prompts) -----------------------------
