@@ -13,3 +13,6 @@ bin/
 # Archivos temporales y de sistema
 .DS_Store
 Thumbs.db
+
+# Blender: no se suben los .blend (se entrega el .zip aparte si se decide)
+*.blend
