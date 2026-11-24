@@ -54,7 +54,7 @@ PROMPTS = {
     "p5":        "Presiona ESPACIO para golpear con la MAC",
     "p6":        "Presiona ESPACIO para dar el golpe",
     "p7":        "Presiona ESPACIO para el golpe final",
-    "p8":        "Presiona ESPACIO para alzar la MAC",
+    "p8":        "Presiona ESPACIO para celebrar",
     "p_fin":     "FIN   ·   ENTER para cerrar   ·   ESC para salir",
 }
 
@@ -89,6 +89,17 @@ def prompt(texto, tam=30, color=(255, 214, 102)):
     d.text((pad - bb[0], (h - (bb[3] - bb[1])) // 2 - bb[1]), texto, font=f, fill=color)
     return img
 
+# Panel de ayuda con los controles (F4 lo muestra / oculta; se abre solo al entrar al modo libre con F2)
+AYUDA = [
+    "CONTROLES   (F4 oculta / muestra este panel)",
+    "MODO LIBRE (F2) · 8 animaciones por input:",
+    "2 Barrido de los SENTINEL  ·  3 Zigzag de CUAU  ·  4 Caminata por partes  ·  5 Obreros (ESPACIO golpea)",
+    "8 Cae un SENTINEL  ·  9 La MAC levita  ·  Click izq: CUAU salta  ·  Click der: los SENTINEL giran",
+    "Otras: 1 Sierras  ·  6 y 7 Huesos (Mixamo)  ·  M Recorrido de cámara (Blender)",
+    "LUCES: L linterna  ·  H casco de CUAU  ·  T día / noche  ·  E Fresnel y reflejos",
+    "RELATO: ENTER / ESPACIO / ← →  ·  F1 cámara libre (WASD + mouse)  ·  F2 modo libre",
+]
+
 if __name__ == "__main__":
     for nombre, lineas in PAGINAS.items():
         grande = nombre in ("t9a",)
@@ -96,4 +107,5 @@ if __name__ == "__main__":
     for nombre, texto in PROMPTS.items():
         color = (255, 120, 110) if nombre == "p4_mal" else (255, 214, 102)
         prompt(texto, color=color).save(os.path.join(AQUI, nombre + ".png"))
+    panel(AYUDA, 22, 1000).save(os.path.join(AQUI, "ayuda.png"))
     print("PNG generados en", AQUI, ":", len(PAGINAS) + len(PROMPTS))

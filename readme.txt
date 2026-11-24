@@ -23,6 +23,7 @@ El programa abre en modo relato: una historia por escenas con texto en pantalla.
 - ESC ..................... salir
 
 MODO LIBRE Y CAMARA
+- F4 ...................... muestra / oculta el panel de controles (se abre solo al entrar al modo libre con F2)
 - F1 ...................... camara libre (WASD o flechas + mouse)
 - F2 ...................... modo banco de pruebas (personajes sueltos para probar las animaciones)
 - F3 ...................... modo edicion de actores (solo desarrollo)

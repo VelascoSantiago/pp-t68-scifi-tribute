@@ -26,6 +26,7 @@
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
 static SkinnedModel* skVictoria = nullptr;   // escena 8: CUAU con la animacion "Victory" de Mixamo (huesos)
 static float tVictoria = 0.0f, VICTORIA_ESC = 1.0f;
+static bool mostrarAyuda = false;   // F4: panel con los controles (se abre solo al entrar al modo libre con F2)
 static bool linterna = false, noche = false;   // T3: L = linterna (spot que sigue a la camara), T = dia/noche (direccional), H = luces del casco de CUAU
 static float tCaida = -1.0f;
 // Animaciones nuevas por input (banco de pruebas): click izquierdo = salto de CUAU, click derecho = giro de los SENTINEL, tecla 9 = la MAC levita y gira
@@ -988,7 +989,7 @@ int main(int argc, char** argv)
 					std::string k = par.substr(c + 1);
 					int key = (k == "SPACE") ? GLFW_KEY_SPACE : (k == "ENTER") ? GLFW_KEY_ENTER : (k == "LEFT") ? GLFW_KEY_LEFT :
 					          (k == "RIGHT") ? GLFW_KEY_RIGHT : (k == "PGDN") ? GLFW_KEY_PAGE_DOWN : (k == "PGUP") ? GLFW_KEY_PAGE_UP :
-					          (k == "TAB") ? GLFW_KEY_TAB : (k == "F3") ? GLFW_KEY_F3 : (k.size() == 1) ? (int)k[0] : GLFW_KEY_RIGHT;
+					          (k == "TAB") ? GLFW_KEY_TAB : (k == "F3") ? GLFW_KEY_F3 : (k == "F4") ? GLFW_KEY_F4 : (k == "F2") ? GLFW_KEY_F2 : (k.size() == 1) ? (int)k[0] : GLFW_KEY_RIGHT;
 					teclasAuto.push_back({ (float)atof(par.substr(0, c).c_str()), key, false });
 				}
 				p = e + 1;
@@ -1232,6 +1233,13 @@ int main(int argc, char** argv)
 		sky.Draw(skyShader, cubemap, view, projection);   // al final: solo rellena lo que no tapo la escena
 
 		if (modoRelato && !sinHud) DibujarHUDRelato(hudShader);
+		if (mostrarAyuda && !sinHud)
+		{
+			glDisable(GL_DEPTH_TEST); glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			TexHUD& th = HUDTex("ayuda");
+			DibujarHUD(hudShader, "ayuda", (float)HEIGHT - th.h * 0.5f - 16.0f);   // arriba, centrado
+			glDisable(GL_BLEND); glEnable(GL_DEPTH_TEST);
+		}
 
 		// captura de pantalla para pruebas (--foto archivo.png tiempo): se toma antes de intercambiar buffers y se cierra
 		if (fotoT >= 0.0f && tReloj >= fotoT)
@@ -1313,7 +1321,8 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 			if (camLibre) camera.SetLookAt(camPos, camMira);
 			std::printf("Camara libre: %s\n", camLibre ? "SI" : "NO");
 		}
-		if (key == GLFW_KEY_F2) { modoRelato = !modoRelato; std::printf("Modo: %s\n", modoRelato ? "RELATO" : "BANCO DE PRUEBAS"); }
+		if (key == GLFW_KEY_F4) mostrarAyuda = !mostrarAyuda;
+		if (key == GLFW_KEY_F2) { modoRelato = !modoRelato; mostrarAyuda = !modoRelato; std::printf("Modo: %s\n", modoRelato ? "RELATO" : "BANCO DE PRUEBAS"); }
 		// escena anterior / siguiente: AvPag y RePag (iguales en cualquier teclado) o las teclas a la derecha de la P ([ y ] en teclado ingles)
 		if (key == GLFW_KEY_PAGE_UP   || key == GLFW_KEY_LEFT_BRACKET)  IrAEscena(escena - 1);
 		if (key == GLFW_KEY_PAGE_DOWN || key == GLFW_KEY_RIGHT_BRACKET) IrAEscena(escena + 1);
