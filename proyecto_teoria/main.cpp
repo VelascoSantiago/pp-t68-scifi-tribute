@@ -1162,6 +1162,27 @@ int main(int argc, char** argv)
 			glUniform1f(glGetUniformLocation(P, "pointLights[1].quadratic"), 0.0075f);
 		}
 
+		// Luces de las 11 veladoras de la ofrenda (posiciones tomadas de Blender): puntuales naranjas que parpadean
+		{
+			static const glm::vec3 VELAS[11] = { {32.578f,1.200f,10.665f}, {34.205f,1.275f,12.954f}, {31.917f,1.390f,14.137f}, {31.365f,2.115f,13.423f},
+				{33.480f,2.116f,13.398f}, {34.525f,1.264f,12.772f}, {33.451f,2.116f,11.608f}, {31.311f,2.116f,11.633f}, {34.201f,1.363f,12.611f},
+				{34.525f,1.264f,12.771f}, {30.568f,1.465f,12.067f} };
+			const float tv = (float)glfwGetTime();
+			for (int i = 0; i < 11; i++)
+			{
+				std::string n = "pointLights[" + std::to_string(2 + i) + "].";
+				float ph = 1.7f * i;
+				float f = 0.80f + 0.15f * sin(8.5f * tv + ph) + 0.08f * sin(21.0f * tv + 2.3f * ph);   // parpadeo: dos senoidales desfasadas
+				glUniform3f(glGetUniformLocation(P, (n + "position").c_str()), VELAS[i].x, VELAS[i].y, VELAS[i].z);
+				glUniform3f(glGetUniformLocation(P, (n + "ambient").c_str()), 0.02f * f, 0.01f * f, 0.0f);
+				glUniform3f(glGetUniformLocation(P, (n + "diffuse").c_str()), 1.3f * f, 0.5f * f, 0.12f * f);
+				glUniform3f(glGetUniformLocation(P, (n + "specular").c_str()), 0.3f * f, 0.15f * f, 0.05f * f);
+				glUniform1f(glGetUniformLocation(P, (n + "constant").c_str()), 1.0f);
+				glUniform1f(glGetUniformLocation(P, (n + "linear").c_str()), 0.7f);
+				glUniform1f(glGetUniformLocation(P, (n + "quadratic").c_str()), 1.5f);
+			}
+		}
+
 		// Luz 1 (L): linterna = spot pegado a la camara que apunta hacia donde mira
 		{
 			glm::vec3 fr = vistaRelato ? glm::normalize(camMira - camPos) : camera.GetFront();
@@ -1179,7 +1200,7 @@ int main(int argc, char** argv)
 		}
 
 		glUniform1f(glGetUniformLocation(P, "material.shininess"), 5.0f);
-		glUniform1i(glGetUniformLocation(P, "transparency"), 0);
+		glUniform1i(glGetUniformLocation(P, "transparency"), 1);   // recorte por alfa: papel picado y petalos con fondo transparente
 		glUniform1f(glGetUniformLocation(P, "emissive"), 0.0f);
 		glUniform1f(glGetUniformLocation(P, "brillo"), 1.0f);
 		glUniform1f(glGetUniformLocation(P, "envOn"), envActivo ? 1.0f : 0.0f);

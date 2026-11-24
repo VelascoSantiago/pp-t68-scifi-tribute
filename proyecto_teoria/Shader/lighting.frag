@@ -1,6 +1,6 @@
 #version 330 core
 
-#define NUMBER_OF_POINT_LIGHTS 2
+#define NUMBER_OF_POINT_LIGHTS 13   // 0 destello del railgun, 1 casco de CUAU, 2..12 veladoras
 
 struct Material
 {
